@@ -97,6 +97,10 @@ module Puma
         @last_status = JSON.parse(status, symbolize_names: true)
       end
 
+      def receive_extended_stats!(extended_stats_payload_str)
+        @launcher.config.run_hooks :accept_extended_stats, index, @pid, extended_stats_payload_str
+      end
+
       def ping_timeout
         @last_checkin +
           (booted? ?
@@ -502,6 +506,8 @@ module Puma
                   w.term unless w.term?
                 when "p"
                   w.ping!(result.sub(/^\d+/,'').chomp)
+                when "x"
+                  w.receive_extended_stats!(result.sub(/^\d+/,'').chomp)
                 end
               else
                 log "! Out-of-sync worker list, no #{pid} worker"
